@@ -1,0 +1,86 @@
+﻿@model List<BitcoinPrice>
+@using Newtonsoft.Json
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<canvas id="bitcoinChart" width="400" height="400"></canvas>
+
+<script>
+    var ctx = document.getElementById('bitcoinChart').getContext('2d');
+    
+    var labels = @Html.Raw(JsonConvert.SerializeObject(Model.Select(m => m.Date.ToString("HH:mm"))));
+    var prices = @Html.Raw(JsonConvert.SerializeObject(Model.Select(m => m.Close)));
+
+    var bitcoinChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Bitcoin Price Today (Hourly)',
+                data: prices,
+                backgroundColor: 'rgba(33, 150, 243, 0.2)',
+                borderColor: 'rgba(33, 150, 243, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                xAxes: [{
+                    type: 'time',
+                    time: {
+                        parser: 'HH:mm',
+                        tooltipFormat: 'HH:mm',
+                        unit: 'hour'
+                    },
+                    distribution: 'linear',
+                    ticks: {
+                        source: 'auto'
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: false
+                    }
+                }]
+            },
+            tooltips: {
+                mode: 'index',
+                intersect: false
+            },
+            hover: {
+                mode: 'nearest',
+                intersect: true
+            }
+        }
+    });
+</script>
+
+@*<script>
+    var ctx = document.getElementById('bitcoinChart').getContext('2d');
+    
+    var dates = @Html.Raw(JsonConvert.SerializeObject(Model.Select(m => m.Date.ToString("yyyy-MM-dd"))));
+    var prices = @Html.Raw(JsonConvert.SerializeObject(Model.Select(m => m.Close)));
+    
+    var bitcoinChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: 'Bitcoin Price',
+                data: prices,
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: false
+                    }
+                }]
+            }
+        }
+    });
+</script>*@

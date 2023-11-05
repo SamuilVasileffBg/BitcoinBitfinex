@@ -3,84 +3,149 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<canvas id="bitcoinChart" width="400" height="400"></canvas>
+<div class="content-wrapper">
+    <div id="canvas-container">
+    </div>
+
+    <div class="day-handling">
+        <button id="prev">Previous Day</button>
+        <div id="current-date"></div>
+        <button id="next" disabled>Next Day</button>
+        <button id="day">Switch to day preview</button>
+    </div>
+    <div>
+        <button id="week">View last 7 days</button>
+    </div>
+</div>
+
+<style>
+    .content-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #canvasContainer {
+        width: 100%;
+        height: 50%;
+    }
+
+    #bitcoinChart {
+        width: 50% !important;
+        height: auto !important;
+    }
+
+    .day-handling {
+        display: flex;
+        flex-direction: row;
+        row-gap: 3rem;
+        margin-top: 3rem;
+    }
+</style>
 
 <script>
-    var ctx = document.getElementById('bitcoinChart').getContext('2d');
-    
-    var labels = @Html.Raw(JsonConvert.SerializeObject(Model.Select(m => m.Date.ToString("HH:mm"))));
-    var prices = @Html.Raw(JsonConvert.SerializeObject(Model.Select(m => m.Close)));
+    let currentDayChange = 0;
 
-    var bitcoinChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Bitcoin Price Today (Hourly)',
-                data: prices,
-                backgroundColor: 'rgba(33, 150, 243, 0.2)',
-                borderColor: 'rgba(33, 150, 243, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                xAxes: [{
-                    type: 'time',
-                    time: {
-                        parser: 'HH:mm',
-                        tooltipFormat: 'HH:mm',
-                        unit: 'hour'
-                    },
-                    distribution: 'linear',
-                    ticks: {
-                        source: 'auto'
-                    }
-                }],
-                yAxes: [{
-                    ticks: {
-                        beginAtZero: false
-                    }
+    const prevDayBtn = document.getElementById("prev");
+    const nextDayBtn = document.getElementById("next");
+    const dayBtn = document.getElementById("day");
+    const weekBtn = document.getElementById("week");
+    const currentDayTextBlock = document.getElementById("current-date");
+    const canvasContainer = document.getElementById("canvas-container")
+
+    function renderChart(labels = @Html.Raw(JsonConvert.SerializeObject(Model.Select(m => m.Date.ToString("HH:mm")))),
+                            prices = @Html.Raw(JsonConvert.SerializeObject(Model.Select(m => m.Close)))) {
+        Array.from(canvasContainer.childNodes).forEach(x => x.remove());
+        let canvas = document.createElement("canvas");
+        canvas.setAttribute("width", "810");
+        canvas.setAttribute("height", "810");
+        canvas.setAttribute("id", "canvasId");
+
+        canvasContainer.appendChild(canvas);
+        let ctx = canvas.getContext('2d');
+
+        let bitcoinChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Bitcoin Price Today (Hourly)',
+                    data: prices,
+                    backgroundColor: 'rgba(33, 150, 243, 0.2)',
+                    borderColor: 'rgba(33, 150, 243, 1)',
+                    borderWidth: 1
                 }]
             },
-            tooltips: {
-                mode: 'index',
-                intersect: false
-            },
-            hover: {
-                mode: 'nearest',
-                intersect: true
+            options: {
+                scales: {
+                    xAxes: [{
+                        type: 'time',
+                        time: {
+                            parser: 'HH:mm',
+                            tooltipFormat: 'HH:mm',
+                            unit: 'hour'
+                        },
+                        distribution: 'linear',
+                        ticks: {
+                            source: 'auto'
+                        }
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: false
+                        }
+                    }]
+                },
+                tooltips: {
+                    mode: 'index',
+                    intersect: false
+                },
+                hover: {
+                    mode: 'nearest',
+                    intersect: true
+                }
             }
+        });
+    }
+
+    renderChart();
+
+    function changeDay(n) {
+        currentDayChange += n;
+
+        if (currentDayChange == 0) {
+            nextDayBtn.setAttribute("disabled", true);
+        } else {
+            nextDayBtn.removeAttribute("disabled");
         }
-    });
+
+        fetchAndDisplayData(`/Home/GetDayInfo?dayChange=${currentDayChange}`)
+    }
+
+    function changeToWeek() {
+        fetchAndDisplayData(`/Home/GetWeeklyInfo`);
+    }
+
+    function fetchAndDisplayData(url) {
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                let labels = data.labels;
+                let prices = data.prices;
+
+                console.log(data);
+                console.log(labels);
+                console.log(prices);
+
+                renderChart(labels, prices);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+    prevDayBtn.addEventListener("click", () => changeDay(-1));
+    nextDayBtn.addEventListener("click", () => changeDay(1));
+    dayBtn.addEventListener("click", () => changeDay(0));
+    weekBtn.addEventListener("click", () => changeToWeek());
 </script>
-
-@*<script>
-    var ctx = document.getElementById('bitcoinChart').getContext('2d');
-    
-    var dates = @Html.Raw(JsonConvert.SerializeObject(Model.Select(m => m.Date.ToString("yyyy-MM-dd"))));
-    var prices = @Html.Raw(JsonConvert.SerializeObject(Model.Select(m => m.Close)));
-    
-    var bitcoinChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: dates,
-            datasets: [{
-                label: 'Bitcoin Price',
-                data: prices,
-                backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                borderColor: 'rgba(255, 99, 132, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                yAxes: [{
-                    ticks: {
-                        beginAtZero: false
-                    }
-                }]
-            }
-        }
-    });
-</script>*@

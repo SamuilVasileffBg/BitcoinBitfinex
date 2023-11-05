@@ -1,5 +1,6 @@
 ﻿using Crypto_MVC.Models;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Diagnostics;
 using System.Net.Http;
@@ -22,9 +23,36 @@ namespace Crypto_MVC.Controllers
 
         public async Task<ActionResult> Index()
         {
-            var model = await bitfinexService.GetBitcoinDataAsyncForTheDay(-733);
+            var model = await bitfinexService.GetBitcoinDataAsyncForTheDay(0);
             return View(model);
         }
+
+        public async Task<IActionResult> GetDayInfo(int dayChange = 0)
+        {
+            var data = await bitfinexService.GetBitcoinDataAsyncForTheDay(dayChange);
+
+            var viewModel = new LabelPricePairInfoViewModel
+            {
+                Labels = data.Select(m => m.Date.ToString("HH:mm")),
+                Prices = data.Select(m => m.Close ?? 0)
+            };
+
+            return Ok(viewModel);
+        }
+
+        public async Task<IActionResult> GetWeeklyInfo()
+        {
+            var data = await bitfinexService.GetWeeklyBitcoinDataAsync();
+
+            var viewModel = new LabelPricePairInfoViewModel
+            {
+                Labels = data.Select(m => m.Date.ToString("yyyy-MM-dd")),
+                Prices = data.Select(m => m.Close ?? 0)
+            };
+
+            return Ok(viewModel);
+        }
+
 
         public IActionResult Privacy()
         {

@@ -45,7 +45,7 @@ public class BitfinexService
     {
         var startTime = new DateTimeOffset(DateTime.UtcNow.Date.AddDays(dayChange)).ToUnixTimeMilliseconds();
 
-        var endTime = new DateTimeOffset(DateTime.UtcNow.AddDays(dayChange)).ToUnixTimeMilliseconds();
+        var endTime = new DateTimeOffset(dayChange == 0 ? DateTime.UtcNow.AddDays(dayChange) : DateTime.UtcNow.Date.AddDays(dayChange + 1)).ToUnixTimeMilliseconds();
 
         string url = $"https://api.bitfinex.com/v2/candles/trade:1h:tBTCUSD/hist?start={startTime}&end={endTime}&sort=1";
 
@@ -68,6 +68,38 @@ public class BitfinexService
         }
 
         return new List<BitcoinPrice>();
+    }
+
+    public async Task<List<BitcoinPrice>> GetWeeklyBitcoinDataAsync()
+    {
+        var weeklyPrices = new List<BitcoinPrice>();
+
+        var sevenDaysAgo = DateTime.UtcNow.AddDays(-7).Date;
+        var startTime = new DateTimeOffset(sevenDaysAgo).ToUnixTimeMilliseconds();
+
+        var endTime = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
+
+        string url = $"https://api.bitfinex.com/v2/candles/trade:1D:tBTCUSD/hist?start={startTime}&end={endTime}&sort=1";
+
+        using (var client = new HttpClient())
+        {
+            var response = await client.GetAsync(url);
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var candles = JsonConvert.DeserializeObject<List<List<decimal>>>(content);
+
+                weeklyPrices = candles.Select(c => new BitcoinPrice
+                {
+                    Date = DateTimeOffset.FromUnixTimeMilliseconds((long)c[0]).UtcDateTime,
+                    Close = c[2]
+                }).ToList();
+            }
+        }
+
+        weeklyPrices = weeklyPrices.OrderBy(p => p.Date).ToList();
+
+        return weeklyPrices;
     }
 
     private DateTime UnixTimeStampToDateTime(double unixTimeStamp)

@@ -22,7 +22,7 @@ namespace Crypto_MVC.Controllers
 
         public async Task<ActionResult> Index()
         {
-            var model = await bitfinexService.GetBitcoinDataAsyncForTheDay(0);
+            var model = await bitfinexService.GetBitcoinDataAsyncForTheDay(-733);
             return View(model);
         }
 

@@ -43,13 +43,9 @@ public class BitfinexService
 
     public async Task<List<BitcoinPrice>> GetBitcoinDataAsyncForTheDay(int dayChange)
     {
-        //var now = DateTime.UtcNow.AddDays(dayChange);
+        var startTime = new DateTimeOffset(DateTime.UtcNow.Date.AddDays(dayChange)).ToUnixTimeMilliseconds();
 
-        // Assume Bitfinex has 1-hour ('1h') candles available
-        // Start time at 00:00:00 UTC today
-        var startTime = new DateTimeOffset(DateTime.UtcNow.Date).ToUnixTimeMilliseconds();
-        // End time at the current hour
-        var endTime = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
+        var endTime = new DateTimeOffset(DateTime.UtcNow.AddDays(dayChange)).ToUnixTimeMilliseconds();
 
         string url = $"https://api.bitfinex.com/v2/candles/trade:1h:tBTCUSD/hist?start={startTime}&end={endTime}&sort=1";
 
@@ -64,7 +60,7 @@ public class BitfinexService
                 var prices = candles.Select(c => new BitcoinPrice
                 {
                     Date = DateTimeOffset.FromUnixTimeMilliseconds((long)c[0]).UtcDateTime,
-                    Close = c[2] // Assuming the 'close' price is at index 2
+                    Close = c[2]
                 }).ToList();
 
                 return prices;

@@ -68,7 +68,7 @@ public class SendEmailsService : BackgroundService
                     subscription.IsDeleted = true;
                     await _context.SaveChangesAsync();
 
-                    Execute($"Bitcoin price has gone up with {percentageChange}" +
+                    Execute($"Bitcoin price has gone up with {percentageChange:f2}%" +
                         $" for the last {subscription.Hours} hour(s).", subscription.Email).Wait();
                 }
 

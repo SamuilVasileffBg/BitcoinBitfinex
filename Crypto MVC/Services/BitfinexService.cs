@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 public class BitfinexService
 {
-    private readonly HttpClient _client;
+    private readonly HttpClient client;
 
     public BitfinexService(HttpClient client)
     {
-        _client = client;
+        this.client = client;
     }
 
     public async Task<List<BitcoinPrice>> GetBitcoinDataAsyncForTheDay(int dayChange, bool euro = false)
@@ -76,12 +76,5 @@ public class BitfinexService
         weeklyPrices = weeklyPrices.OrderBy(p => p.Date).ToList();
 
         return weeklyPrices;
-    }
-
-    private DateTime UnixTimeStampToDateTime(double unixTimeStamp)
-    {
-        System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
-        dtDateTime = dtDateTime.AddSeconds(unixTimeStamp).ToLocalTime();
-        return dtDateTime;
     }
 }

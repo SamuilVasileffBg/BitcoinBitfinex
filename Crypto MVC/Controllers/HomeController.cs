@@ -14,15 +14,11 @@ namespace Crypto_MVC.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-        private readonly IHttpClientFactory _clientFactory;
         private readonly BitfinexService bitfinexService;
         private readonly ApplicationDbContext context;
 
-        public HomeController(ILogger<HomeController> logger, IHttpClientFactory clientFactory, BitfinexService bitfinexService, ApplicationDbContext context)
+        public HomeController(BitfinexService bitfinexService, ApplicationDbContext context)
         {
-            this._logger = logger;
-            this._clientFactory = clientFactory;
             this.bitfinexService = bitfinexService;
             this.context = context;
         }

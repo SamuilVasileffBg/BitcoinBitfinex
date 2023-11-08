@@ -11,13 +11,13 @@ using System.Threading.Tasks;
 
 public class SendEmailsService : BackgroundService
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IServiceProvider serviceProvider;
+    private readonly IHttpClientFactory httpClientFactory;
 
     public SendEmailsService(IServiceProvider serviceProvider, IHttpClientFactory httpClientFactory)
     {
-        _serviceProvider = serviceProvider;
-        _httpClientFactory = httpClientFactory;
+        this.serviceProvider = serviceProvider;
+        this.httpClientFactory = httpClientFactory;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -26,7 +26,7 @@ public class SendEmailsService : BackgroundService
         {
             try
             {
-                using (var scope = _serviceProvider.CreateScope())
+                using (var scope = serviceProvider.CreateScope())
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 

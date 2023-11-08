@@ -14,6 +14,8 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddHttpClient();
 builder.Services.AddHttpClient<BitfinexService>();
+builder.Services.AddHttpClient<SendEmailsService>();
+builder.Services.AddHostedService<SendEmailsService>();
 builder.Services.AddScoped<BitfinexService, BitfinexService>();
 builder.Services.AddControllersWithViews();
 

@@ -16,9 +16,34 @@
     <div>
         <button id="week">View last 7 days</button>
     </div>
+    <div>
+        <button id="euro">Euro</button>
+        <button id="usd">USD</button>
+    </div>
 </div>
 
+<div class="input-form">
+    <input id="email" type="email" placeholder="Enter your Email"/>
+    <div class="percentage-input-container">
+        <input id="percentage" type="number" placeholder="Enter percentage"/>
+        <div>%</div>
+    </div>
+    <select id="hours">
+        <option value="1">1 Hour</option>
+        <option value="6">6 Hours</option>
+        <option value="24">24 Hours</option>
+    </select>
+    <button id="submit-button" class="submit-button">Submit</button>
+</div>
 <style>
+    .input-form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
     .content-wrapper {
         display: flex;
         flex-direction: column;
@@ -41,6 +66,11 @@
         row-gap: 3rem;
         margin-top: 3rem;
     }
+
+    .percentage-input-container {
+        display: flex;
+        flex-direction: row;
+    }
 </style>
 
 <script>
@@ -50,8 +80,12 @@
     const nextDayBtn = document.getElementById("next");
     const dayBtn = document.getElementById("day");
     const weekBtn = document.getElementById("week");
+    const euroBtn = document.getElementById("euro");
+    const usdBtn = document.getElementById("usd");
     const currentDayTextBlock = document.getElementById("current-date");
     const canvasContainer = document.getElementById("canvas-container")
+
+    let euro = false;
 
     function renderChart(labels = @Html.Raw(JsonConvert.SerializeObject(Model.Select(m => m.Date.ToString("HH:mm")))),
                             prices = @Html.Raw(JsonConvert.SerializeObject(Model.Select(m => m.Close)))) {
@@ -108,7 +142,7 @@
         });
     }
 
-    renderChart();
+    //renderChart();
 
     function changeDay(n) {
         currentDayChange += n;
@@ -119,11 +153,11 @@
             nextDayBtn.removeAttribute("disabled");
         }
 
-        fetchAndDisplayData(`/Home/GetDayInfo?dayChange=${currentDayChange}`)
+        executeFunc(() => fetchAndDisplayData(`/Home/GetDayInfo?dayChange=${currentDayChange}&euro=${euro}`));
     }
 
     function changeToWeek() {
-        fetchAndDisplayData(`/Home/GetWeeklyInfo`);
+        executeFunc(() => fetchAndDisplayData(`/Home/GetWeeklyInfo?euro=${euro}`));
     }
 
     function fetchAndDisplayData(url) {
@@ -148,4 +182,45 @@
     nextDayBtn.addEventListener("click", () => changeDay(1));
     dayBtn.addEventListener("click", () => changeDay(0));
     weekBtn.addEventListener("click", () => changeToWeek());
+
+    let lastFunc;
+    function executeFunc(func = null) {
+        lastFunc = func;
+        func ? func() : lastFunc ? lastFunc() : console.log("zdr");
+    }
+
+    function changeCurrency(isEuro) {
+        euro = isEuro;
+        lastFunc();
+    }
+
+    usdBtn.addEventListener("click", () => changeCurrency(false));
+    euroBtn.addEventListener("click", () => changeCurrency(true));
+
+    changeDay(0);
+</script>
+
+
+
+<script>
+    const submitBtn = document.getElementById("submit-button");
+    const emailInput = document.getElementById("email");
+    const percentageInput = document.getElementById("percentage");
+    const hoursSelect = document.getElementById("hours");
+
+    submitBtn.addEventListener("click", () => { 
+        let email = emailInput.value;
+        let percentage = percentageInput.value;
+        let hours = hoursSelect.value;
+
+        console.log(email);
+        console.log(percentage);
+        console.log(hours);
+
+        fetch(`/Home/Subscribe?email=${email}&percentage=${percentage}&hours=${hours}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log("Data: " + data);
+            })
+    })
 </script>

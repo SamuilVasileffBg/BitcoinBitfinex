@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Crypto_MVC.Data.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Crypto_MVC.Data
@@ -9,5 +10,7 @@ namespace Crypto_MVC.Data
             : base(options)
         {
         }
+
+        public DbSet<Subscription> Subscriptions { get; set; }
     }
 }
